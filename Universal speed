@@ -1,0 +1,78 @@
+-- Create the GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.CoreGui
+
+-- Create the frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+frame.Parent = screenGui
+
+-- Create a text box
+local inputBox = Instance.new("TextBox")
+inputBox.Size = UDim2.new(1, -10, 0.5, -10)
+inputBox.Position = UDim2.new(0, 5, 0, 5)
+inputBox.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+inputBox.PlaceholderText = "Enter speed"
+inputBox.Parent = frame
+
+-- Create an apply button
+local applyButton = Instance.new("TextButton")
+applyButton.Size = UDim2.new(1, -10, 0.3, -5)
+applyButton.Position = UDim2.new(0, 5, 0.6, 5)
+applyButton.Text = "Apply Speed"
+applyButton.BackgroundColor3 = Color3.fromRGB(0, 100, 100)
+applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+applyButton.Parent = frame
+
+-- Function to change speed
+local function changeSpeed()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        local speed = tonumber(inputBox.Text)
+        if speed and speed > 0 then
+            humanoid.WalkSpeed = speed -- Set initial speed
+
+            while true do
+                wait(0.1) -- Check every 0.1 seconds
+                humanoid.WalkSpeed = speed -- Maintain speed
+            end
+        else
+            warn("Invalid speed value")
+        end
+    end
+end
+
+-- Connect button click to function
+applyButton.MouseButton1Click:Connect(changeSpeed)
+
+-- Draggable GUI functionality
+local dragging = false
+local dragInput, mousePos, framePos
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragInput = input
+        mousePos = input.Position
+        framePos = frame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        local delta = input.Position - mousePos
+        frame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    end
+end)
